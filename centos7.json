@@ -1,0 +1,41 @@
+{
+    "builders": [
+    {
+        "type": "digitalocean",
+        "api_token": "de9eed575193c79ea0c8e12079d1b0a513310fafa2a5bfbb03bd8b00e6f7c705",
+        "droplet_name": "Drupal-Ansible",
+        "snapshot_name": "Drupal-AMI",
+        "image": "centos-7-x64",
+        "region": "lon1",
+        "size": "s-1vcpu-1gb",
+        "ssh_username": "root"
+    }   
+    ],
+
+    "provisioners": [
+    {
+        "type": "file",
+        "source": "drupal-cms",
+        "destination": "/tmp/"
+
+    },
+
+    {
+        "type": "shell",
+        "inline": [
+            "yum update -y",
+            "yum install epel-release -y",
+            "yum install net-tools tree git -y",
+            "yum install ansible -y",
+            "ansible-playbook /tmp/drupal-cms/site.yml"
+    ]
+        
+        
+
+    
+    
+    }
+    ]
+
+}
+

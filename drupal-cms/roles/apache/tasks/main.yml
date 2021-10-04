@@ -1,0 +1,58 @@
+---
+
+- name: install httpd
+  become: yes
+  yum:
+    name: httpd
+    state: present
+
+- name: Start httpd and enable on boot.
+  become: yes
+  systemd:
+    name: httpd
+    state: started
+    enabled: yes
+
+- name: Change file ownership
+  file:
+    path: /var/www/html/
+    state: directory
+    recurse: yes
+    owner: apache
+    group: apache
+
+- name: Create a directory if it does not exist
+  file:
+    path: /var/www/html/drupal
+    state: directory
+    mode: 0755
+    
+- name: Remove default welcome config.
+  file:
+    path: /etc/httpd/conf.d/welcome.conf
+    state: absent
+
+- name: Add Apache virtualhost for Drupal.
+  template:
+    src: "templates/drupal.conf"
+    dest: "/etc/httpd/conf.d/drupal.conf"
+    owner: root
+    group: root
+    mode: 0644
+
+- name: Set drupal path in httpd.conf.
+  lineinfile:
+    path: /etc/httpd/conf/httpd.conf
+    regexp: '^DocumentRoot "/var/www/html"'
+    line: DocumentRoot "/var/www/html/drupal"
+
+- name: Set servername in httpd.conf.
+  lineinfile:
+    path: /etc/httpd/conf/httpd.conf
+    regexp: '^#ServerName www.example.com:80"'
+    line: ServerName www.localhost:80
+
+- name: restart httpd
+  service: 
+    name: httpd 
+    state: restarted

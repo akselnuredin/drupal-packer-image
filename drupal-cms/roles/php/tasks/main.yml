@@ -1,0 +1,65 @@
+---
+
+- name: Upgrade all packages.
+  yum:
+    name: "*"
+    state: latest
+
+- name: Install yum-utils
+  yum:
+    name: yum-utils
+    state: present
+
+- name: Add Epel repo
+  yum:
+    name: https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
+    state: present
+
+- name: Add Remi repo
+  yum:
+    name: https://rpms.remirepo.net/enterprise/remi-release-7.rpm
+    state: present
+
+- name: Disable php54
+  command: yum-config-manager --disable remi-php54
+
+- name: Enable php74
+  command: yum-config-manager --enable remi-php74
+
+- name: Install libraqm for GD extension
+  yum:
+    name: https://download-ib01.fedoraproject.org/pub/epel/7/x86_64/Packages/l/libraqm-0.7.0-4.el7.x86_64.rpm
+    state: present
+
+- name: Install php packages
+  yum:
+    name:
+      - php 
+      - php-cli 
+      - php-opcache
+      - php-xml
+      - php-mysql
+      - php-gd
+      - php-curl
+      - php-mbstring
+      - php-apcu
+    state: present
+    # enablerepo: "remi,remi-php74"
+  
+- name: Add Opcahce config for better performance.
+  blockinfile:
+    path: /etc/php.d/10-opcache.ini
+    block: |
+      opcache.enable_cli=1
+      opcache.memory_consumption=128
+      opcache.interned_strings_buffer=8
+      opcache.max_accelerated_files=4000
+      opcache.revalidate_freq=60
+      opcache.fast_shutdown=1
+
+- name: restart httpd
+  service: 
+    name: httpd 
+    state: restarted
+
+
